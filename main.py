@@ -1,53 +1,40 @@
-import os
-from openai import OpenAI
 import requests
 import fal_client 
 
-#if error use venv interpreter 
-client = OpenAI(
-    api_key = ''
-)
 
 def generate_New_Image(user_prompt):
-    response = client.images.generate(
-        model="dall-e-3",
-        prompt= user_prompt,
-        size="1024x1024",
-        quality="standard",
-        n=1,
+    """Create a 2D image from the user's text input."""
+
+    result = fal_client.subscribe(
+        "fal-ai/recraft-v3",
+        arguments={
+            "prompt": user_prompt
+        },
+        with_logs=True,
+        on_queue_update=on_queue_update
     )
 
-    image_url = response.data[0].url
-
-    return image_url
+    return result
 
 
-# def edit_Existing_Image():
+# def variations(image_png):
+
+#     variations_List = []
+
 #     response = client.images.create_variation(
 #         model="dall-e-2",
-#         image=open("corgi_and_cat_paw.png", "rb"),
-#         n=3,
+#         image=open(image_png, "rb"),
+#         n=1,
 #         size="1024x1024"
 #     )
 
+#     variations_List.append(response.data[0].url)
 
+#     return variations_List
 
-def variations(image_png):
+def download_2dimage(image_url, filename="downloaded_image.png"):
+    """Download the generated 2D image."""
 
-    variations_List = []
-
-    response = client.images.create_variation(
-        model="dall-e-2",
-        image=open(image_png, "rb"),
-        n=1,
-        size="1024x1024"
-    )
-
-    variations_List.append(response.data[0].url)
-
-    return variations_List
-
-def download_image(image_url, filename="downloaded_image.png"):
     # Get the image content
     response = requests.get(image_url)
     response.raise_for_status()  # Raises HTTPError if the response was unsuccessful
@@ -59,12 +46,16 @@ def download_image(image_url, filename="downloaded_image.png"):
     print(f"Image saved to {filename}")
 
 def on_queue_update(update):
+    """Receive updates and logs from the Fal client while request is being processed. Do not call manually."""
+
     if isinstance(update, fal_client.InProgress):
         for log in update.logs:
            print(log["message"])
 
 
 def run_trellis(url):
+    """Create a 3D model from the 2D image URL provided."""
+
     result = fal_client.subscribe(
         "fal-ai/trellis",
         arguments={
@@ -73,23 +64,16 @@ def run_trellis(url):
         with_logs=True,
         on_queue_update=on_queue_update,
     )
-    print(result)
+    return result
 
 
 if __name__ == "__main__":
     user_prompt = input("Enter your 3D model description: ")
-    user_prompt_eng = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS:" + user_prompt
 
-    variations_List = []
-    os.makedirs("myimage", exist_ok=True)
-
-    i = 0 
-
-    # Generate and download multiple images
-    urls = [generate_New_Image(user_prompt_eng) for _ in range(2)] 
+    generate_New_Image(user_prompt)
 
     
-    run_trellis(urls[0])
+    # run_trellis(urls[0])
 
 
 
