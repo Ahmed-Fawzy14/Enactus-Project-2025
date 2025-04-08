@@ -70,7 +70,7 @@ def run_trellis(url):
 if __name__ == "__main__":
     user_prompt = input("Enter your 3D model description: ")
 
-    generate_New_Image(user_prompt)
+    print(run_trellis(generate_New_Image(user_prompt)["images"][0]["url"]))
 
     
     # run_trellis(urls[0])
