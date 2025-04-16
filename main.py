@@ -8,6 +8,19 @@ client = OpenAI(
     api_key = ''
 )
 
+
+def optimize_3d_print_prompt(subject, style, color, view, texture): 
+  
+    if not subject or not style or not view or not texture:
+        return "Error: Missing details for a 3D-printable image."
+
+  
+    optimized_prompt = (
+        f"A 3D-rendered {style} of a {subject}, {view} view, {color}, "
+        f"{texture} surface, single solid shape, no background, well lit and no complex reflections."
+    )
+    return optimized_prompt
+
 def generate_New_Image(user_prompt):
     response = client.images.generate(
         model="dall-e-3",
@@ -77,20 +90,21 @@ def run_trellis(url):
 
 
 if __name__ == "__main__":
-    user_prompt = input("Enter your 3D model description: ")
-    user_prompt_eng = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS:" + user_prompt
-
-    variations_List = []
-    os.makedirs("myimage", exist_ok=True)
-
-    i = 0 
-
-    # Generate and download multiple images
-    urls = [generate_New_Image(user_prompt_eng) for _ in range(2)] 
-
+    # User input for prompt customization
+    subject = input("Enter the main object (e.g., dragon, spaceship): ")
+    style = input("Enter the style (e.g., clay sculpture, low-poly, realistic): ")
+    view = input("Enter the view (e.g., front, side, top, orthographic): ")
+    texture = input("Enter the surface texture (e.g., smooth, matte, metallic): ")
+    color= input("Enter the desired color of the subject")
     
+    # Generate optimized prompt
+    user_prompt = optimize_3d_print_prompt(subject, style, color, view, textu
+                                           re)
+    print("\nOptimized Prompt:", user_prompt)
+    
+    # Generate and process the image
+    urls = [generate_New_Image(user_prompt) for _ in range(2)]
     run_trellis(urls[0])
-
 
 
 
